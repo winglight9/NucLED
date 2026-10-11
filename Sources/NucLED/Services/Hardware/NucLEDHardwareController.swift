@@ -311,18 +311,14 @@ actor NucLEDHardwareController: LEDHardwareControlling {
         var failures: [String] = []
         for zone in zones.reversed() {
             guard let expected = values[zone] else {
-                failures.append(AppText.localized("hardware.error.snapshotMissingZone", NUCLEDZone.name(for: zone)))
+                failures.append("\(NUCLEDZone.name(for: zone))：快照缺少此灯区")
                 continue
             }
             do {
                 try driver.setIndicator(zone: zone, indicator: expected)
                 try verify(zone: zone, expected: expected, using: driver)
             } catch {
-                failures.append(AppText.localized(
-                    "hardware.error.zoneRestoreFailed",
-                    NUCLEDZone.name(for: zone),
-                    error.localizedDescription
-                ))
+                failures.append("\(NUCLEDZone.name(for: zone))：\(error.localizedDescription)")
             }
         }
         return failures
@@ -341,21 +337,10 @@ struct NUCLEDInventory: Sendable {
 }
 
 private enum NUCLEDZone {
-    private static let nameKeys = [
-        "hardware.zone.power",
-        "hardware.zone.storage",
-        "hardware.zone.skull",
-        "hardware.zone.eyes",
-        "hardware.zone.frontPanel1",
-        "hardware.zone.frontPanel2",
-        "hardware.zone.frontPanel3"
-    ]
+    private static let names = ["电源灯", "硬盘灯", "骷髅灯", "眼睛灯", "前面板灯 1", "前面板灯 2", "前面板灯 3"]
 
     static func name(for zone: UInt8) -> String {
-        guard Int(zone) < nameKeys.count else {
-            return AppText.localized("hardware.zone.unknown", Int(zone))
-        }
-        return AppText.localized(nameKeys[Int(zone)])
+        Int(zone) < names.count ? names[Int(zone)] : "未知灯区 \(zone)"
     }
 }
 
@@ -450,7 +435,7 @@ private struct LEDStateSnapshotStore {
 
     private func snapshotURL(createDirectory: Bool) throws -> URL {
         guard let support = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            throw NUCLEDHardwareError.applicationSupportUnavailable
+            throw NUCLEDHardwareError.snapshotPersistence("找不到用户级 Application Support 目录")
         }
         let directory = support.appendingPathComponent("NucLED", isDirectory: true)
         if createDirectory {
@@ -471,10 +456,8 @@ private struct LEDStateSnapshotStore {
 
 private enum NUCLEDHardwareError: LocalizedError {
     case driverUnavailable
-    case driverOpenFailed(String)
-    case driverMethodFailed(selector: UInt32, status: String)
+    case driverCall(String)
     case driverProtocolMismatch
-    case applicationSupportUnavailable
     case disableUnsupported([String])
     case powerStateUnsupported([String])
     case noRecoverableSnapshot
@@ -492,48 +475,38 @@ private enum NUCLEDHardwareError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .driverUnavailable:
-            return AppText.localized("hardware.error.driverUnavailable")
-        case .driverOpenFailed(let status):
-            return AppText.localized("hardware.error.driverOpenFailed", status)
-        case .driverMethodFailed(let selector, let status):
-            return AppText.localized("hardware.error.driverMethodFailed", Int(selector), status)
+            return "没有找到 NUC LED 内核驱动；尚未写入任何 LED 状态。"
+        case .driverCall(let detail):
+            return "NUC LED 驱动调用失败：\(detail)"
         case .driverProtocolMismatch:
-            return AppText.localized("hardware.error.driverProtocolMismatch")
-        case .applicationSupportUnavailable:
-            return AppText.localized("hardware.error.applicationSupportUnavailable")
+            return "NUC LED 驱动协议版本或返回数据不匹配。"
         case .disableUnsupported(let zones):
-            return AppText.localized("hardware.error.disableUnsupported", ListFormatter.localizedString(byJoining: zones))
+            return "以下已检测灯区不支持 Disable，已拒绝部分关闭：\(zones.joined(separator: "、"))。"
         case .powerStateUnsupported(let zones):
-            let affected = zones.isEmpty
-                ? AppText.localized("hardware.zones.allDetected")
-                : ListFormatter.localizedString(byJoining: zones)
-            return AppText.localized("hardware.error.powerStateUnsupported", affected)
+            let affected = zones.isEmpty ? "当前所有已检测灯区" : zones.joined(separator: "、")
+            return "\(affected)不支持 BIOS Power State 模式，未能首次启用 LED。"
         case .noRecoverableSnapshot:
-            return AppText.localized("hardware.error.noRecoverableSnapshot")
+            return "没有可恢复的灯区状态快照。若灯区在应用启动前已关闭，应用无法推测原先模式。"
         case .snapshotUnreadable(let detail):
-            return AppText.localized("hardware.error.snapshotUnreadable", detail)
+            return "保存的 LED 恢复快照无法读取：\(detail)"
         case .snapshotPersistence(let detail):
-            return AppText.localized("hardware.error.snapshotPersistence", detail)
+            return "无法安全保存或清除 LED 恢复快照：\(detail)"
         case .snapshotMismatch:
-            return AppText.localized("hardware.error.snapshotMismatch")
+            return "恢复快照与当前灯区清单不匹配；为避免错误改写，操作已停止。"
         case .unexpectedCurrentState:
-            return AppText.localized("hardware.error.unexpectedCurrentState")
+            return "灯区状态已被外部改变；为避免覆盖其他设置，操作已停止。"
         case .readbackMismatch(let zone, let expected, let actual):
-            return AppText.localized("hardware.error.readbackMismatch", zone, Int(expected), Int(actual))
+            return "\(zone)回读不符（期望模式 \(expected)，实际 \(actual)）。"
         case .operationFailed(let detail):
-            return AppText.localized("hardware.error.operationFailed", detail)
+            return "LED 操作失败，已回滚到操作前状态：\(detail)"
         case .rollbackFailed(let operation, let rollback):
-            return AppText.localized(
-                "hardware.error.rollbackFailed",
-                operation,
-                ListFormatter.localizedString(byJoining: rollback)
-            )
+            return "LED 操作失败：\(operation)。回滚也未能完全确认：\(rollback.joined(separator: "；"))。恢复快照已保留。"
         case .rollbackSucceededButJournalCleanupFailed(let operation, let cleanup):
-            return AppText.localized("hardware.error.rollbackSucceededCleanupFailed", operation, cleanup)
+            return "LED 操作失败且已回滚：\(operation)。清除回滚日志失败：\(cleanup)"
         case .restoredButJournalCleanupFailed(let detail):
-            return AppText.localized("hardware.error.restoredCleanupFailed", detail)
+            return "灯区已恢复并回读确认，但清除恢复快照失败：\(detail)"
         case .powerStateAppliedButJournalCleanupFailed(let detail):
-            return AppText.localized("hardware.error.powerStateCleanupFailed", detail)
+            return "支持 Power State 的灯区已选择此 BIOS 策略并回读确认，但清除初始化日志失败：\(detail)"
         }
     }
 }
@@ -580,7 +553,7 @@ struct NUCLEDDriverClient: Sendable {
         var connection: io_connect_t = IO_OBJECT_NULL
         let openStatus = IOServiceOpen(service, mach_task_self_, 0, &connection)
         guard openStatus == KERN_SUCCESS else {
-            throw NUCLEDHardwareError.driverOpenFailed(String(openStatus, radix: 16))
+            throw NUCLEDHardwareError.driverCall("IOServiceOpen 返回 0x\(String(openStatus, radix: 16))")
         }
         defer { IOServiceClose(connection) }
 
@@ -599,7 +572,7 @@ struct NUCLEDDriverClient: Sendable {
             }
         }
         guard status == KERN_SUCCESS else {
-            throw NUCLEDHardwareError.driverMethodFailed(selector: selector, status: String(status, radix: 16))
+            throw NUCLEDHardwareError.driverCall("IOConnectCallStructMethod(selector \(selector)) 返回 0x\(String(status, radix: 16))")
         }
         guard actualOutputSize == outputSize else {
             throw NUCLEDHardwareError.driverProtocolMismatch

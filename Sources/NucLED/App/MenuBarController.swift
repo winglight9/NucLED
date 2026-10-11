@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import OSLog
 import SwiftUI
 
@@ -11,6 +12,7 @@ final class MenuBarController: NSObject {
     private let statusItem: NSStatusItem
     private let popover: NSPopover
     private let logger = Logger(subsystem: "local.nucled.MenuBar", category: "StatusItem")
+    private var stateObservation: AnyCancellable?
 
     init(model: AppModel) {
         self.model = model
@@ -20,6 +22,7 @@ final class MenuBarController: NSObject {
 
         configureStatusItem()
         configurePopover()
+        observeLEDState()
         logger.info("Menu bar status item configured")
     }
 
@@ -27,11 +30,12 @@ final class MenuBarController: NSObject {
         guard let button = statusItem.button else { return }
         button.image = Self.makeSkullImage()
         button.imagePosition = .imageOnly
-        button.toolTip = AppText.localized("menubar.tooltip")
-        button.setAccessibilityLabel(AppText.localized("menubar.accessibility.label"))
+        button.toolTip = "冥王 LED"
+        button.setAccessibilityLabel("冥王 LED 状态与控制")
         button.target = self
         button.action = #selector(togglePopover(_:))
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        updateTintColor(for: model.isLEDEnabled)
     }
 
     private func configurePopover() {
@@ -39,6 +43,26 @@ final class MenuBarController: NSObject {
         popover.animates = true
         popover.contentSize = NSSize(width: 330, height: 440)
         popover.contentViewController = NSHostingController(rootView: MenuBarPanel(model: model))
+    }
+
+    private func observeLEDState() {
+        stateObservation = model.$isLEDEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak self] state in
+                self?.updateTintColor(for: state)
+            }
+    }
+
+    private func updateTintColor(for state: Bool?) {
+        guard let button = statusItem.button else { return }
+        switch state {
+        case .some(true):
+            button.contentTintColor = .labelColor
+        case .some(false):
+            button.contentTintColor = .secondaryLabelColor
+        case .none:
+            button.contentTintColor = .tertiaryLabelColor
+        }
     }
 
     @objc private func togglePopover(_ sender: Any?) {
@@ -54,25 +78,13 @@ final class MenuBarController: NSObject {
     }
 
     private static func makeSkullImage() -> NSImage {
-        // Keep the image canvas at the standard 18 pt menu-bar size, with a
-        // little breathing room so the custom silhouette has the same visual
-        // weight as neighboring system status icons.
-        let renderer = ImageRenderer(
-            content: HadesSkullSymbol()
-                .frame(width: 16, height: 16)
-                .frame(width: 18, height: 18)
-        )
+        let renderer = ImageRenderer(content: HadesSkullSymbol().frame(width: 18, height: 18))
         renderer.scale = 2
         if let image = renderer.nsImage {
             image.size = NSSize(width: 18, height: 18)
             image.isTemplate = true
             return image
         }
-        let fallback = NSImage(
-            systemSymbolName: "skull",
-            accessibilityDescription: AppText.localized("menubar.skull.fallback.description")
-        ) ?? NSImage()
-        fallback.isTemplate = true
-        return fallback
+        return NSImage(systemSymbolName: "skull", accessibilityDescription: "冥王 LED") ?? NSImage()
     }
 }

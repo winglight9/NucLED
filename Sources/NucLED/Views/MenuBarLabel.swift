@@ -14,11 +14,7 @@ struct MenuBarLabel: View {
     }
 
     private var accessibilityText: String {
-        guard let isLEDEnabled = model.isLEDEnabled else {
-            return AppText.localized("menubar.accessibility.status.unknown")
-        }
-        return isLEDEnabled
-            ? AppText.localized("menubar.accessibility.status.enabled")
-            : AppText.localized("menubar.accessibility.status.disabled")
+        guard let isLEDEnabled = model.isLEDEnabled else { return "冥王 LED 状态未知" }
+        return isLEDEnabled ? "冥王 LED 模式已启用" : "冥王 LED 模式已停用"
     }
 }
