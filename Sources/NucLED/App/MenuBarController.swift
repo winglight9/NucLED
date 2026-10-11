@@ -27,8 +27,8 @@ final class MenuBarController: NSObject {
         guard let button = statusItem.button else { return }
         button.image = Self.makeSkullImage()
         button.imagePosition = .imageOnly
-        button.toolTip = AppText.localized("menubar.tooltip")
-        button.setAccessibilityLabel(AppText.localized("menubar.accessibility.label"))
+        button.toolTip = "冥王 LED"
+        button.setAccessibilityLabel("冥王 LED 状态与控制")
         button.target = self
         button.action = #selector(togglePopover(_:))
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -68,10 +68,7 @@ final class MenuBarController: NSObject {
             image.isTemplate = true
             return image
         }
-        let fallback = NSImage(
-            systemSymbolName: "skull",
-            accessibilityDescription: AppText.localized("menubar.skull.fallback.description")
-        ) ?? NSImage()
+        let fallback = NSImage(systemSymbolName: "skull", accessibilityDescription: "冥王 LED") ?? NSImage()
         fallback.isTemplate = true
         return fallback
     }

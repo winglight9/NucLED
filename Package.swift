@@ -3,7 +3,6 @@ import PackageDescription
 
 let package = Package(
     name: "NucLED",
-    defaultLocalization: "zh-Hans",
     platforms: [.macOS(.v13)],
     products: [.executable(name: "NucLED", targets: ["NucLED"])],
     targets: [

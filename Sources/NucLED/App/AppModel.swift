@@ -47,8 +47,8 @@ final class AppModel: ObservableObject {
         self.isLEDEnabled = nil
         self.isScheduleEnabled = false
         self.isLoginItemEnabled = false
-        self.statusText = AppText.localized("status.checkingLEDInterface")
-        self.nextActionText = AppText.localized("schedule.disabled")
+        self.statusText = "正在检查 LED 控制接口…"
+        self.nextActionText = "定时已关闭"
 
         let savedSchedule = try? DailyLEDSchedule.load(from: defaults)
         let savedPlanIsEnabled = defaults.bool(forKey: ScheduleCoordinator.enabledStorageKey)
@@ -110,7 +110,7 @@ final class AppModel: ObservableObject {
 
         if enabled {
             guard let on = localTime(from: onTime), let off = localTime(from: offTime), on != off else {
-                nextActionText = AppText.localized("schedule.error.equalTimes")
+                nextActionText = "开启和关闭时间不能相同"
                 isScheduleEnabled = false
                 return
             }
@@ -122,13 +122,13 @@ final class AppModel: ObservableObject {
                 updateNextActionText()
             } catch {
                 isScheduleEnabled = scheduleCoordinator.isEnabled
-                nextActionText = AppText.localized("schedule.error.enableFailed", error.localizedDescription)
+                nextActionText = "无法启用计划：\(error.localizedDescription)"
             }
         } else {
             do {
                 try scheduleCoordinator.setEnabled(false)
             } catch {
-                nextActionText = AppText.localized("schedule.error.disableFailed", error.localizedDescription)
+                nextActionText = "无法关闭计划：\(error.localizedDescription)"
             }
             isScheduleEnabled = scheduleCoordinator.isEnabled
             updateNextActionText()
@@ -155,7 +155,7 @@ final class AppModel: ObservableObject {
     }
 
     func quit() {
-        statusText = AppText.localized("status.appQuitting")
+        statusText = "应用已退出，定时计划暂停；重新打开后继续"
         scheduleCoordinator.stop()
         NSApplication.shared.terminate(nil)
     }
@@ -197,43 +197,44 @@ final class AppModel: ObservableObject {
             }
             persistDisplayedTimes(on: on, off: off)
             if wasEnabled {
-                nextActionText = AppText.localized("schedule.error.equalTimesPaused")
+                nextActionText = "开关时间不能相同，计划已暂停"
             } else {
                 updateNextActionText()
             }
         } catch {
-            nextActionText = AppText.localized("schedule.error.saveFailed", error.localizedDescription)
+            nextActionText = "无法保存计划：\(error.localizedDescription)"
         }
     }
 
     private func updateNextActionText() {
         guard scheduleCoordinator.isEnabled else {
-            nextActionText = AppText.localized("schedule.disabled")
+            nextActionText = "定时已关闭"
             return
         }
         guard let transition = scheduleCoordinator.nextTransition else {
-            nextActionText = AppText.localized("schedule.error.nextActionUnavailable")
+            nextActionText = "无法计算下一次动作"
             return
         }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale.autoupdatingCurrent
+        formatter.calendar = Calendar.autoupdatingCurrent
+        formatter.timeZone = TimeZone.autoupdatingCurrent
+        formatter.dateFormat = "HH:mm"
 
         let calendar = Calendar.autoupdatingCurrent
         let dateLabel: String
         if calendar.isDateInToday(transition.date) {
-            let time = DateFormatter.localizedString(from: transition.date, dateStyle: .none, timeStyle: .short)
-            dateLabel = AppText.localized("date.todayAt", time)
+            dateLabel = "今天 \(formatter.string(from: transition.date))"
         } else if calendar.isDateInTomorrow(transition.date) {
-            let time = DateFormatter.localizedString(from: transition.date, dateStyle: .none, timeStyle: .short)
-            dateLabel = AppText.localized("date.tomorrowAt", time)
+            dateLabel = "明天 \(formatter.string(from: transition.date))"
         } else {
-            dateLabel = DateFormatter.localizedString(
-                from: transition.date,
-                dateStyle: .medium,
-                timeStyle: .short
-            )
+            formatter.dateFormat = "M月d日 HH:mm"
+            dateLabel = formatter.string(from: transition.date)
         }
 
-        let key = transition.kind == .turnOn ? "schedule.next.turnOn" : "schedule.next.turnOff"
-        nextActionText = AppText.localized(key, dateLabel)
+        let action = transition.kind == .turnOn ? "将开启" : "将关闭"
+        nextActionText = "\(dateLabel) \(action) LED"
     }
 
     private func refreshHardwareState() async {
@@ -245,11 +246,11 @@ final class AppModel: ObservableObject {
             let enabled = try await hardware.readLEDEnabled()
             isLEDEnabled = enabled
             canControlLED = true
-            statusText = AppText.localized("status.ledReady", Self.ledModeText(enabled))
+            statusText = "控制就绪 · LED 模式已\(enabled ? "启用" : "停用")"
         } catch {
             isLEDEnabled = nil
             canControlLED = false
-            statusText = AppText.localized("status.ledUnavailable", error.localizedDescription)
+            statusText = "LED 控制不可用：\(error.localizedDescription)"
         }
     }
 
@@ -269,16 +270,16 @@ final class AppModel: ObservableObject {
             let actual = try await hardware.readLEDEnabled()
             isLEDEnabled = actual
             if actual == requested {
-                statusText = AppText.localized("status.ledReady", Self.ledModeText(actual))
+                statusText = "控制就绪 · LED 模式已\(actual ? "启用" : "停用")"
             } else {
                 canControlLED = false
-                statusText = AppText.localized("status.ledReadbackMismatch", Self.ledModeText(actual))
+                statusText = "控制未生效 · 回读状态仍为 LED 模式已\(actual ? "启用" : "停用")"
             }
         } catch {
             let actual = try? await hardware.readLEDEnabled()
             isLEDEnabled = actual
             canControlLED = actual != nil
-            statusText = AppText.localized("status.ledControlFailed", error.localizedDescription)
+            statusText = "LED 控制失败：\(error.localizedDescription)"
         }
     }
 
@@ -296,23 +297,23 @@ final class AppModel: ObservableObject {
             let actual = try await hardware.readLEDEnabled()
             isLEDEnabled = actual
             canControlLED = true
-            statusText = AppText.localized("status.ledReady", Self.ledModeText(actual))
+            statusText = "控制就绪 · LED 模式已\(actual ? "启用" : "停用")"
 
             guard scheduleCoordinator.isEnabled, actual != target else { return }
             try await hardware.setLEDEnabled(target)
             let verified = try await hardware.readLEDEnabled()
             isLEDEnabled = verified
             if verified == target {
-                statusText = AppText.localized("status.scheduleApplied", Self.ledModeText(verified))
+                statusText = "计划已执行 · LED 模式已\(verified ? "启用" : "停用")"
             } else {
                 canControlLED = false
-                statusText = AppText.localized("status.scheduleReadbackMismatch", Self.ledModeText(verified))
+                statusText = "计划控制未生效 · 回读状态为 LED 模式已\(verified ? "启用" : "停用")"
             }
         } catch {
             let actual = try? await hardware.readLEDEnabled()
             isLEDEnabled = actual
             canControlLED = actual != nil
-            statusText = AppText.localized("status.scheduleFailed", error.localizedDescription)
+            statusText = "计划执行失败：\(error.localizedDescription)"
         }
     }
 
@@ -329,10 +330,6 @@ final class AppModel: ObservableObject {
         let parts = Calendar.autoupdatingCurrent.dateComponents([.hour, .minute], from: date)
         guard let hour = parts.hour, let minute = parts.minute else { return nil }
         return try? LocalTime(hour: hour, minute: minute)
-    }
-
-    private static func ledModeText(_ enabled: Bool) -> String {
-        AppText.localized(enabled ? "led.mode.enabled" : "led.mode.disabled")
     }
 
     private func persistDisplayedTimes(on: LocalTime, off: LocalTime) {

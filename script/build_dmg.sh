@@ -4,8 +4,8 @@ set -euo pipefail
 APP_NAME="NucLED"
 BUNDLE_ID="local.nucled.MenuBar"
 MIN_SYSTEM_VERSION="13.0"
-APP_VERSION="1.0.5"
-BUILD_VERSION="6"
+APP_VERSION="1.0.4"
+BUILD_VERSION="5"
 VOLUME_NAME="冥王 LED 安装器"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
@@ -41,13 +41,6 @@ install -m 755 "$BUILD_BINARY" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 if [[ -d "$BUILD_RESOURCE_BUNDLE" ]]; then
   ditto "$BUILD_RESOURCE_BUNDLE" "$APP_BUNDLE/Contents/Resources/NucLED_NucLED.bundle"
 fi
-for locale in zh-Hans en ja ko; do
-  localized_plist="$ROOT_DIR/Sources/NucLED/Resources/$locale.lproj/InfoPlist.strings"
-  if [[ -f "$localized_plist" ]]; then
-    mkdir -p "$APP_BUNDLE/Contents/Resources/$locale.lproj"
-    cp "$localized_plist" "$APP_BUNDLE/Contents/Resources/$locale.lproj/InfoPlist.strings"
-  fi
-done
 
 if [[ -f "$ICON_SOURCE" ]]; then
   install -m 644 "$ICON_SOURCE" "$APP_BUNDLE/Contents/Resources/$ICON_NAME"
@@ -67,9 +60,6 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
   <key>CFBundleName</key><string>冥王 LED</string>
   <key>CFBundleDisplayName</key><string>冥王 LED</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleDevelopmentRegion</key><string>zh-Hans</string>
-  <key>CFBundleLocalizations</key>
-  <array><string>zh-Hans</string><string>en</string><string>ja</string><string>ko</string></array>
   <key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
   <key>CFBundleVersion</key><string>$BUILD_VERSION</string>
   <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>

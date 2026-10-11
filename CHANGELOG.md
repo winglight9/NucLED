@@ -1,10 +1,5 @@
 # Changelog
 
-## 1.0.5
-
-- Localize the app interface, hardware status messages, and error descriptions in Simplified Chinese, English, Japanese, and Korean. macOS preferred language is selected automatically, with Simplified Chinese as the fallback.
-- Clear the segmented time editor's selection and resign focus after edits to prevent the blue selection from remaining visible.
-
 ## 1.0.4
 
 - Move the next scheduled action hint directly below the LED master switch, with explicit wording such as “今天 21:30 将关闭 LED”.
