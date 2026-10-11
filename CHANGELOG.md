@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+- Replace the segmented SwiftUI date picker with a localized time text field that clears its AppKit field-editor selection in the actual text-editing end callback, fixing the blue selection that persisted after the field lost focus.
+
 ## 1.0.5
 
 - Localize the app interface, hardware status messages, and error descriptions in Simplified Chinese, English, Japanese, and Korean. macOS preferred language is selected automatically, with Simplified Chinese as the fallback.

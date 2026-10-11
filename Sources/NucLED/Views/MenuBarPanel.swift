@@ -160,13 +160,9 @@ struct MenuBarPanel: View {
                     .foregroundStyle(.secondary)
             }
 
-            DatePicker(title, selection: selection, displayedComponents: .hourAndMinute)
-                .labelsHidden()
-                .datePickerStyle(.field)
+            TimeField(selection: selection)
                 .accessibilityLabel(title)
-                .onChange(of: selection.wrappedValue) { _ in
-                    MenuBarTextEditing.commitAndDefocus()
-                }
+                .frame(height: 22)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
