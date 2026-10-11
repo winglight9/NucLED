@@ -29,6 +29,13 @@ cp "$ICON_SOURCE" "$APP_CONTENTS/Resources/$ICON_NAME"
 if [[ -d "$BUILD_RESOURCE_BUNDLE" ]]; then
   ditto "$BUILD_RESOURCE_BUNDLE" "$APP_CONTENTS/Resources/NucLED_NucLED.bundle"
 fi
+for locale in zh-Hans en ja ko; do
+  localized_plist="$ROOT_DIR/Sources/NucLED/Resources/$locale.lproj/InfoPlist.strings"
+  if [[ -f "$localized_plist" ]]; then
+    mkdir -p "$APP_CONTENTS/Resources/$locale.lproj"
+    cp "$localized_plist" "$APP_CONTENTS/Resources/$locale.lproj/InfoPlist.strings"
+  fi
+done
 cat > "$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -39,6 +46,9 @@ cat > "$INFO_PLIST" <<PLIST
   <key>CFBundleName</key><string>冥王 LED</string>
   <key>CFBundleDisplayName</key><string>冥王 LED</string>
   <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleDevelopmentRegion</key><string>zh-Hans</string>
+  <key>CFBundleLocalizations</key>
+  <array><string>zh-Hans</string><string>en</string><string>ja</string><string>ko</string></array>
   <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
   <key>LSUIElement</key><true/>
   <key>NSPrincipalClass</key><string>NSApplication</string>

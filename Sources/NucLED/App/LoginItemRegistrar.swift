@@ -22,7 +22,7 @@ struct LoginItemRegistrar {
         guard #available(macOS 13.0, *) else {
             return UpdateResult(
                 isEnabled: false,
-                statusText: enabled ? "登录启动需要 macOS 13 或更高版本" : nil
+                statusText: enabled ? AppText.localized("login.error.osVersionRequired") : nil
             )
         }
 
@@ -46,7 +46,7 @@ struct LoginItemRegistrar {
                   installedBundlePath.hasPrefix(applicationsPath) else {
                 return UpdateResult(
                     isEnabled: false,
-                    statusText: "请先将 NucLED.app 安装到“应用程序”文件夹，再启用登录启动。"
+                    statusText: AppText.localized("login.error.installInApplications")
                 )
             }
 
@@ -58,7 +58,7 @@ struct LoginItemRegistrar {
                 }
                 return UpdateResult(
                     isEnabled: false,
-                    statusText: "无法启用登录启动：\(error.localizedDescription)"
+                    statusText: AppText.localized("login.error.enableFailed", error.localizedDescription)
                 )
             }
 
@@ -69,12 +69,12 @@ struct LoginItemRegistrar {
                 ? UpdateResult(isEnabled: true, statusText: nil)
                 : UpdateResult(
                     isEnabled: true,
-                    statusText: "已请求登录启动；请在系统设置“通用 › 登录项”确认状态。"
+                    statusText: AppText.localized("login.status.requestedCheckSettings")
                 )
         @unknown default:
             return UpdateResult(
                 isEnabled: false,
-                statusText: "无法确认登录启动状态；请检查系统设置“通用 › 登录项”。"
+                statusText: AppText.localized("login.error.statusUnknown")
             )
         }
     }
@@ -91,24 +91,24 @@ struct LoginItemRegistrar {
             } catch {
                 return UpdateResult(
                     isEnabled: service.status == .enabled || service.status == .requiresApproval,
-                    statusText: "无法关闭登录启动：\(error.localizedDescription)"
+                    statusText: AppText.localized("login.error.disableFailed", error.localizedDescription)
                 )
             }
 
             let stillEnabled = service.status == .enabled || service.status == .requiresApproval
             return UpdateResult(
                 isEnabled: stillEnabled,
-                statusText: stillEnabled ? "登录启动仍处于系统待批准状态；请检查系统设置“通用 › 登录项”。" : nil
+                statusText: stillEnabled ? AppText.localized("login.error.disableStillPending") : nil
             )
         @unknown default:
             return UpdateResult(
                 isEnabled: false,
-                statusText: "无法确认登录启动状态；请检查系统设置“通用 › 登录项”。"
+                statusText: AppText.localized("login.error.statusUnknown")
             )
         }
     }
 
     private var approvalInstructions: String {
-        "请在系统设置“通用 › 登录项”中允许 NucLED 登录时打开。"
+        AppText.localized("login.status.approvalRequired")
     }
 }

@@ -12,6 +12,8 @@ A macOS menu bar utility for Intel Hades Canyon NUCs. It provides a manual LED m
 - Optionally launch at login. Quitting pauses the schedule; reopening the app resumes it.
 - Save a per-zone mode snapshot before disabling LEDs, then validate and restore it one zone at a time.
 
+The interface is available in Simplified Chinese, English, Japanese, and Korean. It follows the preferred language in macOS and falls back to Simplified Chinese when none matches.
+
 The project changes firmware LED modes only. It does not control color or brightness. Reading the Power State mode does not prove that an LED is visibly illuminated.
 
 ## Supported hardware and system

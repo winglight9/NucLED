@@ -41,7 +41,12 @@ struct MenuBarPanel: View {
 
     private var hasError: Bool {
         let text = model.statusText.lowercased()
-        let errorTerms = ["失败", "错误", "不可用", "未连接", "未接入", "未生效", "error", "failed", "unavailable", "denied"]
+        let errorTerms = [
+            "失败", "错误", "不可用", "未连接", "未接入", "未生效",
+            "error", "failed", "unavailable", "denied",
+            "失敗", "エラー", "利用できません", "接続されていません", "反映されません", "できません",
+            "실패", "오류", "사용할 수 없습니다", "연결되지 않았습니다", "적용되지 않았습니다", "할 수 없습니다", "거부"
+        ]
         return errorTerms.contains { text.contains($0) }
     }
 
@@ -55,8 +60,12 @@ struct MenuBarPanel: View {
         if !model.statusText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return model.statusText
         }
-        guard let isLEDEnabled = model.isLEDEnabled else { return "设备状态未知" }
-        return isLEDEnabled ? "控制就绪 · LED 模式已启用" : "控制就绪 · LED 模式已停用"
+        guard let isLEDEnabled = model.isLEDEnabled else {
+            return AppText.localized("menu.status.unknown")
+        }
+        return AppText.localized(
+            isLEDEnabled ? "menu.status.ready.enabled" : "menu.status.ready.disabled"
+        )
     }
 
     var body: some View {
@@ -89,7 +98,7 @@ struct MenuBarPanel: View {
                 .frame(width: 42, height: 42)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text("冥王 LED")
+                Text(AppText.localized("menu.app.name"))
                     .font(.headline)
                 HStack(spacing: 6) {
                     Circle()
@@ -110,24 +119,32 @@ struct MenuBarPanel: View {
     private var ledControl: some View {
         Toggle(isOn: ledBinding) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("LED 总开关")
+                Text(AppText.localized("menu.led.title"))
                     .font(.body.weight(.medium))
-                Text("统一控制全部可控区域的指示灯模式")
+                Text(AppText.localized("menu.led.description"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
         .disabled(model.isLEDEnabled == nil || !model.canControlLED || model.isHardwareBusy)
-        .help(model.canControlLED ? "启用或停用 LED 指示灯模式" : statusDescription)
+        .help(model.canControlLED ? AppText.localized("menu.led.help") : statusDescription)
     }
 
     private var scheduleControl: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Toggle("每日定时开关", isOn: scheduleBinding)
+            Toggle(AppText.localized("menu.schedule.title"), isOn: scheduleBinding)
 
             HStack(spacing: 10) {
-                timePicker(title: "开启时间", color: .green, selection: onTimeBinding)
-                timePicker(title: "关闭时间", color: .orange, selection: offTimeBinding)
+                timePicker(
+                    title: AppText.localized("menu.schedule.time.on"),
+                    color: .green,
+                    selection: onTimeBinding
+                )
+                timePicker(
+                    title: AppText.localized("menu.schedule.time.off"),
+                    color: .orange,
+                    selection: offTimeBinding
+                )
             }
         }
     }
@@ -174,15 +191,15 @@ struct MenuBarPanel: View {
     }
 
     private var nextActionPrompt: String {
-        model.nextActionText == "定时已关闭"
-            ? "每日定时未开启，没有待执行动作"
-            : "下次：\(model.nextActionText)"
+        model.isScheduleEnabled
+            ? AppText.localized("menu.nextAction.upcoming", model.nextActionText)
+            : AppText.localized("menu.nextAction.disabled")
     }
 
     private var loginItemControl: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Toggle("登录时启动", isOn: loginItemBinding)
-                .help("登录 macOS 账户后自动打开冥王 LED")
+            Toggle(AppText.localized("menu.login.title"), isOn: loginItemBinding)
+                .help(AppText.localized("menu.login.help"))
 
             if let notice = model.loginItemStatusText {
                 Label(notice, systemImage: "exclamationmark.triangle")
@@ -195,16 +212,16 @@ struct MenuBarPanel: View {
 
     private var footer: some View {
         HStack {
-            Label("退出后暂停，重新打开后继续", systemImage: "pause.circle")
+            Label(AppText.localized("menu.footer.quitReminder"), systemImage: "pause.circle")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
             Spacer()
-            Button("退出") {
+            Button(AppText.localized("menu.action.quit")) {
                 model.quit()
             }
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
-            .help("退出后定时计划暂停；重新打开应用后继续")
+            .help(AppText.localized("menu.action.quit.help"))
             .keyboardShortcut("q")
         }
     }
