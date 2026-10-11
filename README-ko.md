@@ -1,0 +1,66 @@
+# Hades Canyon용 NucLED
+
+Intel Hades Canyon NUC를 위한 macOS 메뉴 막대 앱입니다. LED 모드를 수동으로 전환하고 매일 켜고 끌 시간을 예약할 수 있습니다. 앱은 이 프로젝트의 IOKit 커널 드라이버를 통해 메인보드 WMI 인터페이스에 접근합니다. 드라이버가 없으면 성공한 것처럼 표시하지 않고 제어할 수 없다고 알립니다.
+
+[简体中文](README.md) · [English](README-en.md) · [日本語](README-ja.md) · [한국어](README-ko.md)
+
+## 기능
+
+- 메뉴 막대의 해골 아이콘을 눌러 제어 패널을 엽니다.
+- LED 표시 모드를 수동으로 켜거나 끄고 하드웨어 상태를 다시 읽어 결과를 확인합니다.
+- 매일 켜고 끌 시간을 설정합니다. 잠자기에서 깨어나거나 시각 또는 시간대가 바뀌면 예약을 다시 확인합니다.
+- 로그인 시 자동 실행을 선택할 수 있습니다. 앱을 종료하면 예약이 일시 중지되고 앱을 다시 열면 재개됩니다.
+- LED를 끄기 전에 구역별 모드를 저장하고, 검증한 다음 한 구역씩 복원합니다.
+
+이 프로젝트는 펌웨어 LED 모드만 바꿉니다. 색상이나 밝기는 제어하지 않습니다. Power State 모드를 읽었다고 해서 LED가 눈에 보이게 켜져 있다는 뜻은 아닙니다.
+
+## 지원 하드웨어 및 시스템
+
+- 대상: 검증된 `AMW0` WMI 인터페이스를 제공하는 Intel Hades Canyon NUC8i7HVK / NUC8i7HNK.
+- 앱: macOS 13 이상, Swift Package Manager로 빌드합니다.
+- 드라이버: Intel `x86_64`용이며 현재 최소 빌드 대상은 macOS 15.5입니다. macOS 15.5 Hackintosh에서만 검증했습니다. 앱이 실행된다고 해서 해당 시스템에서 드라이버가 로드된다는 뜻은 아닙니다.
+
+일반 Mac LED 제어기가 아닙니다. Apple Silicon 및 다른 NUC 모델은 지원하지 않습니다.
+
+## 앱 설치
+
+[GitHub Releases](https://github.com/winglight9/NucLED/releases/latest)에서 `NucLED-Installer.dmg`를 내려받아 열고 `NucLED.app`을 응용 프로그램 폴더로 드래그합니다. 응용 프로그램에서 앱을 실행한 뒤 메뉴 막대의 해골 아이콘을 누르세요. Dock 아이콘이나 별도 메인 창은 없습니다. 메뉴 막대 공간이 부족하면 macOS의 숨김/오버플로 항목을 확인하세요.
+
+현재 DMG에는 앱만 있고 드라이버, 드라이버 설치 프로그램, 제거 프로그램은 포함되지 않습니다. 소스에서 빌드한 KEXT는 서명되지 않았습니다. 개발 호스트는 사용자 지정 테스트 보안 설정을 사용했으므로 일반 macOS 보안 설정에서 드라이버가 로드된다는 것을 보장하지 않습니다. macOS 11 이상에서는 타사 KEXT에 사용자 승인과 재시동이 필요하며 Apple은 일반 소프트웨어에 KEXT 사용을 권장하지 않습니다. [Apple의 KEXT 배포 안내](https://support.apple.com/guide/deployment/system-extensions-in-macos-depa5fb8376f/web)와 [`Driver/README.md`](Driver/README.md)를 참조하세요. 현재 버전은 하드웨어 검증/개발 프리뷰이며 일반 사용자를 위한 완전한 원클릭 하드웨어 설치 프로그램이 아닙니다. 이 프로젝트를 위해 시스템 전체 SIP를 끄지 마세요.
+
+현재 앱은 로컬 임시 서명만 사용하며 Developer ID 서명이나 Apple 공증은 받지 않았습니다. macOS에서 개발자를 확인할 수 없다는 경고가 표시될 수 있습니다. 다운로드 출처를 신뢰하고 배포 파일을 확인한 경우에만 Finder에서 Control 클릭 → 열기를 사용하세요. 공개 배포에 필요한 서명과 공증은 [Apple 공증 안내](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)를 참조하세요. 로그인 시 자동 실행을 사용하려면 앱을 응용 프로그램 폴더에 설치해야 하며, 시스템 설정 → 일반 → 로그인 항목에서 승인이 필요할 수 있습니다.
+
+## 소스에서 빌드
+
+Xcode Command Line Tools와 macOS SDK가 필요합니다.
+
+```sh
+swift build --configuration release
+./script/build_dmg.sh
+```
+
+스크립트는 `dist/NucLED-Installer.dmg`를 만듭니다. 임시 서명은 Developer ID 서명과 공증을 대신하지 않습니다.
+
+드라이버 번들 빌드:
+
+```sh
+make -C Driver bundle
+```
+
+이 명령은 서명되지 않은 `Driver/.build/NUCLEDDriver.kext`만 빌드하며 **설치하거나 로드하지 않습니다**. 드라이버에는 커널 코드가 들어 있으며 호환되는 Intel Hades Canyon 전용입니다. 먼저 드라이버 문서를 읽고 설치 위험을 확인하세요.
+
+## 하드웨어 검증
+
+개발용 Hades Canyon에서 실제 WMI 쓰기와 읽기를 한 차례 확인했습니다. 여섯 LED 구역을 읽고 각각 비활성화한 뒤 확인했으며 원래 모드로 복원하고 다시 읽었습니다. 이 결과가 다른 장치의 호환성을 보장하지 않으며 카메라나 광 센서로 실제 발광을 검증하지도 않았습니다. 공개 DMG에는 앱만 들어 있으며 일반 사용자를 위한 서명된 드라이버 패키지는 없습니다.
+
+## 문제 해결
+
+- **앱 아이콘을 눌러도 창이 나타나지 않음:** 메뉴 막대 앱입니다. 메뉴 막대의 해골 아이콘을 눌러 제어 패널을 여세요.
+- **해골 아이콘이 보이지 않음:** NucLED가 실행 중인지 확인하고 숨겨진 메뉴 막대 항목도 확인하세요.
+- **패널에 드라이버를 사용할 수 없다고 표시됨:** `NUCLEDDriver`가 로드되었는지 확인하세요. 앱 번들에는 드라이버 설치 프로그램이 없습니다.
+- **전환 실패:** 패널의 상태 메시지를 확인하세요. 상태를 다시 읽어 확인할 수 없으면 앱은 성공으로 처리하지 않고 오류를 표시합니다.
+
+## 소스 및 라이선스
+
+저장소에는 macOS 앱, 드라이버 소스, 빌드 스크립트, 아이콘 자료가 들어 있습니다. 드라이버 인터페이스와 보안 경계는 [`Driver/README.md`](Driver/README.md)를 참조하세요. 현재 오픈소스 라이선스는 선언되지 않았습니다. 소스를 공개해도 복사, 수정 또는 재배포 권한이 부여되는 것은 아닙니다.
+

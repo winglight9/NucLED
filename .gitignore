@@ -1,0 +1,10 @@
+.build/
+.swiftpm/
+dist/
+DerivedData/
+*.xcuserstate
+.DS_Store
+.codex/
+outputs/
+# Generated during packaging from the tracked AppIcon.svg source.
+Sources/NucLED/Resources/AppIcon.icns
