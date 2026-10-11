@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.7
+
+- Replace the menu-bar and panel skull drawings with a color and monochrome trace from the actual Hades Canyon lid photo, preserving its proportions, eye shapes, connector rings, and jaw details.
+- Use the same hardware silhouette in the macOS app icon and size the menu-bar mark to the full 18 pt status-item height.
+
 ## 1.0.6
 
 - Replace the segmented SwiftUI date picker with a localized time text field that clears its AppKit field-editor selection in the actual text-editing end callback, fixing the blue selection that persisted after the field lost focus.

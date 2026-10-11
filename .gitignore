@@ -6,5 +6,5 @@ DerivedData/
 .DS_Store
 .codex/
 outputs/
-# Generated during packaging from the tracked AppIcon.svg source.
+# Generated during packaging from the tracked HadesSkullColor.png asset.
 Sources/NucLED/Resources/AppIcon.icns

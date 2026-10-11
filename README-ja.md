@@ -7,6 +7,7 @@ Intel Hades Canyon NUC 用の macOS メニューバーアプリです。LED モ�
 ## 機能
 
 - メニューバーのドクロアイコンをクリックして操作パネルを開きます。
+- メニューバー、操作パネル、アプリアイコンには Hades Canyon の天板にあるドクロの輪郭を使用し、メニューバーでは macOS の単色表示に合わせます。
 - LED インジケーターモードを手動で有効／無効にし、ハードウェアを読み戻して結果を確認します。
 - 毎日の点灯／消灯時刻を設定できます。スリープ復帰、時計やタイムゾーンの変更後にスケジュールを再確認します。
 - ログイン時の起動を選択できます。アプリを終了するとスケジュールを一時停止し、再起動後に再開します。
@@ -26,7 +27,7 @@ Intel Hades Canyon NUC 用の macOS メニューバーアプリです。LED モ�
 
 ## アプリのインストール
 
-[GitHub Releases](https://github.com/winglight9/NucLED/releases/latest) から `NucLED-Installer.dmg` をダウンロードして開き、`NucLED.app` を「アプリケーション」へドラッグします。「アプリケーション」から起動し、メニューバーのドクロアイコンをクリックしてください。Dock アイコンや独立したメインウィンドウはありません。メニューバーに空きがない場合は、macOS の非表示／オーバーフロー項目を確認してください。
+[GitHub Releases](https://github.com/winglight9/NucLED/releases/latest) から最新バージョンの DMG をダウンロードして開き、`NucLED.app` を「アプリケーション」へドラッグします。「アプリケーション」から起動し、メニューバーのドクロアイコンをクリックしてください。Dock アイコンや独立したメインウィンドウはありません。メニューバーに空きがない場合は、macOS の非表示／オーバーフロー項目を確認してください。
 
 現在の DMG はアプリのみで、ドライバ、ドライバインストーラー、アンインストーラーは含まれません。ソースからビルドされる KEXT は未署名です。開発機では独自のテスト用セキュリティ設定を使用しており、通常の macOS セキュリティ設定で読み込めることを示すものではありません。macOS 11 以降のサードパーティ KEXT はユーザー承認と再起動が必要で、Apple は一般的なソフトウェアに KEXT を推奨していません。[Apple の KEXT 展開ガイド](https://support.apple.com/guide/deployment/system-extensions-in-macos-depa5fb8376f/web)および [`Driver/README.md`](Driver/README.md) を参照してください。現状はハードウェア検証／開発プレビューであり、一般ユーザー向けの完全なワンクリックインストーラーではありません。実行のために SIP 全体を無効にしないでください。
 
@@ -41,7 +42,7 @@ swift build --configuration release
 ./script/build_dmg.sh
 ```
 
-スクリプトは `dist/NucLED-Installer.dmg` を作成します。アプリのアドホック署名は Developer ID 署名や公証の代わりにはなりません。
+スクリプトは `dist/NucLED-1.0.7-Installer.dmg` のようなバージョン付きディスクイメージを作成します。アプリのアドホック署名は Developer ID 署名や公証の代わりにはなりません。
 
 ドライバ bundle のビルド：
 

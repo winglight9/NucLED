@@ -5,6 +5,8 @@ MODE="${1:-run}"
 APP_NAME="NucLED"
 BUNDLE_ID="local.nucled.MenuBar"
 MIN_SYSTEM_VERSION="13.0"
+APP_VERSION="1.0.7"
+BUILD_VERSION="8"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 APP_BUNDLE="$DIST_DIR/$APP_NAME.app"
@@ -46,6 +48,8 @@ cat > "$INFO_PLIST" <<PLIST
   <key>CFBundleName</key><string>冥王 LED</string>
   <key>CFBundleDisplayName</key><string>冥王 LED</string>
   <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
+  <key>CFBundleVersion</key><string>$BUILD_VERSION</string>
   <key>CFBundleDevelopmentRegion</key><string>zh-Hans</string>
   <key>CFBundleLocalizations</key>
   <array><string>zh-Hans</string><string>en</string><string>ja</string><string>ko</string></array>
@@ -56,6 +60,8 @@ cat > "$INFO_PLIST" <<PLIST
 </dict>
 </plist>
 PLIST
+codesign --force --deep --identifier "$BUNDLE_ID" --sign - "$APP_BUNDLE"
+codesign --verify --deep --strict "$APP_BUNDLE"
 open_app() { /usr/bin/open -n "$APP_BUNDLE"; }
 case "$MODE" in
   run) open_app ;;

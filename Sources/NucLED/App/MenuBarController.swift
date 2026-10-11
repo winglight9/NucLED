@@ -54,17 +54,10 @@ final class MenuBarController: NSObject {
     }
 
     private static func makeSkullImage() -> NSImage {
-        // Keep the image canvas at the standard 18 pt menu-bar size, with a
-        // little breathing room so the custom silhouette has the same visual
-        // weight as neighboring system status icons.
-        let renderer = ImageRenderer(
-            content: HadesSkullSymbol()
-                .frame(width: 16, height: 16)
-                .frame(width: 18, height: 18)
-        )
-        renderer.scale = 2
-        if let image = renderer.nsImage {
-            image.size = NSSize(width: 18, height: 18)
+        if let url = Bundle.module.url(forResource: "HadesSkullTemplate", withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            let aspectRatio = image.size.width / image.size.height
+            image.size = NSSize(width: 18 * aspectRatio, height: 18)
             image.isTemplate = true
             return image
         }

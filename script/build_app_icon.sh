@@ -3,7 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RESOURCE_DIR="$ROOT_DIR/Sources/NucLED/Resources"
-SOURCE_SVG="$RESOURCE_DIR/AppIcon.svg"
+SOURCE_SKULL="$RESOURCE_DIR/HadesSkullColor.png"
+ICON_GENERATOR="$ROOT_DIR/script/build_app_icon.swift"
 TMP_ROOT="$(mktemp -d -t nucled-icon-XXXXXX)"
 MASTER_PNG="$TMP_ROOT/master.png"
 ICONSET_DIR="$TMP_ROOT/AppIcon.iconset"
@@ -14,7 +15,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-sips -s format png "$SOURCE_SVG" --out "$MASTER_PNG" >/dev/null
+swift "$ICON_GENERATOR" "$SOURCE_SKULL" "$MASTER_PNG"
 
 make_icon() {
   local points="$1"

@@ -7,6 +7,7 @@ Intel Hades Canyon NUC를 위한 macOS 메뉴 막대 앱입니다. LED 모드를
 ## 기능
 
 - 메뉴 막대의 해골 아이콘을 눌러 제어 패널을 엽니다.
+- 메뉴 막대, 제어 패널, 앱 아이콘은 Hades Canyon 상판의 해골 실루엣을 사용하며, 메뉴 막대에서는 macOS의 단색 색조를 따릅니다.
 - LED 표시 모드를 수동으로 켜거나 끄고 하드웨어 상태를 다시 읽어 결과를 확인합니다.
 - 매일 켜고 끌 시간을 설정합니다. 잠자기에서 깨어나거나 시각 또는 시간대가 바뀌면 예약을 다시 확인합니다.
 - 로그인 시 자동 실행을 선택할 수 있습니다. 앱을 종료하면 예약이 일시 중지되고 앱을 다시 열면 재개됩니다.
@@ -26,7 +27,7 @@ Intel Hades Canyon NUC를 위한 macOS 메뉴 막대 앱입니다. LED 모드를
 
 ## 앱 설치
 
-[GitHub Releases](https://github.com/winglight9/NucLED/releases/latest)에서 `NucLED-Installer.dmg`를 내려받아 열고 `NucLED.app`을 응용 프로그램 폴더로 드래그합니다. 응용 프로그램에서 앱을 실행한 뒤 메뉴 막대의 해골 아이콘을 누르세요. Dock 아이콘이나 별도 메인 창은 없습니다. 메뉴 막대 공간이 부족하면 macOS의 숨김/오버플로 항목을 확인하세요.
+[GitHub Releases](https://github.com/winglight9/NucLED/releases/latest)에서 최신 버전의 DMG를 내려받아 열고 `NucLED.app`을 응용 프로그램 폴더로 드래그합니다. 응용 프로그램에서 앱을 실행한 뒤 메뉴 막대의 해골 아이콘을 누르세요. Dock 아이콘이나 별도 메인 창은 없습니다. 메뉴 막대 공간이 부족하면 macOS의 숨김/오버플로 항목을 확인하세요.
 
 현재 DMG에는 앱만 있고 드라이버, 드라이버 설치 프로그램, 제거 프로그램은 포함되지 않습니다. 소스에서 빌드한 KEXT는 서명되지 않았습니다. 개발 호스트는 사용자 지정 테스트 보안 설정을 사용했으므로 일반 macOS 보안 설정에서 드라이버가 로드된다는 것을 보장하지 않습니다. macOS 11 이상에서는 타사 KEXT에 사용자 승인과 재시동이 필요하며 Apple은 일반 소프트웨어에 KEXT 사용을 권장하지 않습니다. [Apple의 KEXT 배포 안내](https://support.apple.com/guide/deployment/system-extensions-in-macos-depa5fb8376f/web)와 [`Driver/README.md`](Driver/README.md)를 참조하세요. 현재 버전은 하드웨어 검증/개발 프리뷰이며 일반 사용자를 위한 완전한 원클릭 하드웨어 설치 프로그램이 아닙니다. 이 프로젝트를 위해 시스템 전체 SIP를 끄지 마세요.
 
@@ -41,7 +42,7 @@ swift build --configuration release
 ./script/build_dmg.sh
 ```
 
-스크립트는 `dist/NucLED-Installer.dmg`를 만듭니다. 임시 서명은 Developer ID 서명과 공증을 대신하지 않습니다.
+스크립트는 `dist/NucLED-1.0.7-Installer.dmg` 같은 버전이 포함된 디스크 이미지를 만듭니다. 임시 서명은 Developer ID 서명과 공증을 대신하지 않습니다.
 
 드라이버 번들 빌드:
 

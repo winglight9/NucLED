@@ -7,6 +7,7 @@
 ## 功能
 
 - 点击顶部菜单栏的骷髅图标，打开 LED 控制面板。
+- 菜单栏、控制面板和应用图标都使用按冥王峡谷机身骷髅灯图案提取的轮廓；菜单栏保持系统单色显示。
 - 手动启用或停用 LED 指示灯模式；应用会回读硬件状态确认结果。
 - 设置每日开启和关闭时间。睡眠唤醒、系统时间或时区改变后会重新核对计划。
 - 可选“登录时启动”。应用退出后定时计划暂停，重新打开后继续。
@@ -26,7 +27,7 @@
 
 ## 安装应用
 
-从 [GitHub Releases](https://github.com/winglight9/NucLED/releases/latest) 下载 `NucLED-Installer.dmg`，双击打开，把 `NucLED.app` 拖入“应用程序”，然后从“应用程序”启动。启动后请点击屏幕顶部菜单栏中的骷髅图标；应用不显示 Dock 图标，也不打开独立主窗口。若菜单栏空间不足，请检查系统的菜单栏隐藏/溢出区域。
+从 [GitHub Releases](https://github.com/winglight9/NucLED/releases/latest) 下载最新版本的安装 DMG，双击打开，把 `NucLED.app` 拖入“应用程序”，然后从“应用程序”启动。启动后请点击屏幕顶部菜单栏中的骷髅图标；应用不显示 Dock 图标，也不打开独立主窗口。若菜单栏空间不足，请检查系统的菜单栏隐藏/溢出区域。
 
 当前 DMG 只安装应用，不含驱动、驱动安装器或卸载器。驱动源码构建出的 KEXT 未签名；开发机使用了自定义测试安全配置，不能据此保证它可在常规 macOS 安全配置下加载。macOS 11 及更新版本的第三方 KEXT 需要用户批准并重启；Apple 也不再建议一般软件使用 KEXT。[Apple 的 KEXT 部署说明](https://support.apple.com/guide/deployment/system-extensions-in-macos-depa5fb8376f/web)详述了批准与重启要求。详见 [`Driver/README.md`](Driver/README.md)。本项目目前是硬件验证/开发预览，尚不是可供普通用户一键安装的完整硬件套件；不要为了运行它而关闭整机 SIP。
 
@@ -41,7 +42,7 @@ swift build --configuration release
 ./script/build_dmg.sh
 ```
 
-`./script/build_dmg.sh` 会生成 `dist/NucLED-Installer.dmg`。生成应用使用本地临时签名，不能替代 Developer ID 签名与公证流程。
+`./script/build_dmg.sh` 会生成带版本号的安装映像，例如 `dist/NucLED-1.0.7-Installer.dmg`。生成应用使用本地临时签名，不能替代 Developer ID 签名与公证流程。
 
 构建驱动 bundle：
 
